@@ -1,27 +1,76 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import scans from "@/api/scans";
 import { Zap, Mail, AlertTriangle, CheckCircle } from "lucide-react";
 
-const Hero = () => (
-  <section className="py-12 px-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-    <div>
-      <h1 className="text-5xl font-bold leading-tight text-slate-800">
-        Deteksi Indikasi <span className="text-cyan-600">Phishing</span> pada
-        Pesan Anda.
-      </h1>
-      <p className="mt-4 text-gray-500 max-w-lg">
-        Tempelkan isi pesan dari WhatsApp, SMS, atau Email untuk dianalisis oleh
-        AI kami. Lindungi diri dari penipuan digital sebelum Anda merespons atau
-        mengklik tautan apapun.
-      </p>
-      <div className="mt-8 bg-white p-6 rounded-2xl shadow-xl border border-gray-100 relative">
-        <textarea
-          className="w-full h-40 p-4 bg-gray-50 rounded-lg focus:outline-none"
-          placeholder="Contoh: 'Selamat! Anda memenangkan hadiah...'"
-        />
-        <button className="mt-4 bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-gray-800 transition">
-          Analisis Pesan Sekarang <Zap size={18} fill="currentColor" />
-        </button>
+const Hero = () => {
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleScan = async () => {
+    if (!text.trim()) {
+      setError("Silakan masukkan teks pesan terlebih dahulu.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      // Mengirimkan API lewat scans.js dengan field 'message_content' sesuai kebutuhan backend
+      const response = await scans.createScan({ message_content: text });
+      
+      // Redirect ke /result dengan membawa hasil API di state
+      navigate("/result", { 
+        state: { 
+          scanResult: response.data, 
+          scannedText: text 
+        } 
+      });
+    } catch (err) {
+      console.error("Gagal melakukan scan:", err);
+      setError("Gagal mendeteksi pesan. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="py-12 px-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 className="text-5xl font-bold leading-tight text-slate-800">
+          Deteksi Indikasi <span className="text-cyan-600">Phishing</span> pada
+          Pesan Anda.
+        </h1>
+        <p className="mt-4 text-gray-500 max-w-lg">
+          Tempelkan isi pesan dari WhatsApp, SMS, atau Email untuk dianalisis oleh
+          AI kami. Lindungi diri dari penipuan digital sebelum Anda merespons atau
+          mengklik tautan apapun.
+        </p>
+        <div className="mt-8 bg-white p-6 rounded-2xl shadow-xl border border-gray-100 relative">
+          <textarea
+            className="w-full h-40 p-4 bg-gray-50 rounded-lg focus:outline-none border border-transparent focus:border-cyan-500 transition-all resize-none"
+            placeholder="Contoh: 'Selamat! Anda memenangkan hadiah...'"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (error) setError("");
+            }}
+            disabled={loading}
+          />
+          {error && <p className="text-red-500 text-xs mt-1 mb-2">{error}</p>}
+          <button 
+            onClick={handleScan}
+            disabled={loading}
+            className={`mt-4 bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-gray-800 transition ${
+              loading ? "opacity-75 cursor-not-allowed" : ""
+            }`}
+          >
+            {loading ? "Menganalisis..." : "Analisis Pesan Sekarang"}
+            <Zap size={18} fill="currentColor" className={loading ? "animate-pulse" : ""} />
+          </button>
+        </div>
       </div>
-    </div>
 
     {/* Ilustrasi Kartu Kanan */}
     <div className="bg-linear-to-br from-blue-50 to-cyan-50 p-8 rounded-3xl">
@@ -79,6 +128,7 @@ const Hero = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default Hero;
