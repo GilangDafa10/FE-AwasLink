@@ -9,10 +9,10 @@ const HeaderAndTactics = () => {
           <ShieldAlert className="w-3.5 h-3.5" strokeWidth={2.5} />
           Waspada Rekayasa Sosial
         </span>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-3">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-3">
           Melawan Manipulasi Psikologis Digital
         </h1>
-        <p className="text-slate-500 text-sm mt-2 max-w-3xl leading-relaxed">
+        <p className="text-slate-500 text-xs sm:text-sm mt-2 max-w-3xl leading-relaxed">
           Penipu modern tidak hanya meretas sistem, mereka meretas pikiran Anda. Pelajari teknik
           rekayasa sosial dalam pesan teks agar Anda tidak menjadi korban berikutnya.
         </p>
@@ -26,9 +26,9 @@ const HeaderAndTactics = () => {
           <div className="flex-1 space-y-4">
             <div>
               <span className="text-xs font-semibold text-rose-600 tracking-wide flex items-center gap-1">
-                <TriangleAlert size={16}/> Taktik Manipulasi Pesan
+                <TriangleAlert size={16} className="shrink-0" /> Taktik Manipulasi Pesan
               </span>
-              <h2 className="text-xl font-bold text-slate-800 mt-1">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-800 mt-1">
                 Bagaimana Penipu Mempengaruhi Anda
               </h2>
             </div>
@@ -38,19 +38,19 @@ const HeaderAndTactics = () => {
             
             <ul className="space-y-3 text-xs text-slate-700">
               <li className="flex items-start gap-2.5">
-                <AlarmClock size={16}/>
+                <AlarmClock size={16} className="text-amber-500 shrink-0 mt-0.5" />
                 <div>
                   <strong className="text-slate-900">Mendesak:</strong> "Akun akan diblokir dalam 30 menit jika tidak dikonfirmasi."
                 </div>
               </li>
               <li className="flex items-start gap-2.5">
-                <Gift size={16}/>
+                <Gift size={16} className="text-cyan-500 shrink-0 mt-0.5" />
                 <div>
                   <strong className="text-slate-900">Godaan:</strong> "Selamat! Anda memenangkan undian Rp100 Juta, klik di sini."
                 </div>
               </li>
               <li className="flex items-start gap-2.5">
-                <Building2 size={16}/>
+                <Building2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
                 <div>
                   <strong className="text-slate-900">Otoritas Palsu:</strong> Menyamar sebagai petugas bank atau kurir ekspedisi resmi.
                 </div>
@@ -78,7 +78,7 @@ const HeaderAndTactics = () => {
         </div>
 
         {/* KARTU KANAN: Ciri Bahasa Penipu */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs flex flex-col justify-between gap-4">
           <div className="space-y-3">
             <h2 className="text-lg font-bold text-slate-800">Ciri Bahasa Penipu</h2>
             <p className="text-xs text-slate-500 leading-relaxed">
@@ -90,7 +90,7 @@ const HeaderAndTactics = () => {
             </div>
           </div>
 
-          <a href="#analisis" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 mt-4 flex items-center gap-1.5 transition-colors">
+          <a href="#analisis" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 mt-4 flex items-center gap-1.5 transition-colors w-fit">
             Analisis Teks Lainnya
             <ExternalLink className="w-3.5 h-3.5" />
           </a>

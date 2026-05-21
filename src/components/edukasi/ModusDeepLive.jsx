@@ -25,11 +25,11 @@ const ModusDeepDive = () => {
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-xs">
       {/* Header Panel */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
-        <h2 className="text-lg font-bold text-slate-800">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-b border-slate-100 pb-4 mb-6">
+        <h2 className="text-base sm:text-lg font-bold text-slate-800">
           Modus Penipuan Via Pesan Tekstual (Deep Dive)
         </h2>
-        <span className="text-[11px] font-bold tracking-wide bg-slate-500 text-white px-2.5 py-1 rounded-md uppercase">
+        <span className="w-fit text-[10px] sm:text-[11px] font-bold tracking-wide bg-slate-500 text-white px-2.5 py-1 rounded-md uppercase">
           Wajib Tahu
         </span>
       </div>

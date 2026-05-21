@@ -56,7 +56,7 @@ const SecurityChecklistAndCTA = () => {
             Jangan biarkan mereka memanipulasi Anda. Gunakan alat kami untuk mendeteksi apakah sebuah pesan atau link mengandung unsur penipuan rekayasa sosial.
           </p>
         </div>
-        <button className="whitespace-nowrap px-5 py-2.5 bg-[#006677] hover:bg-[#004d5a] text-white text-xs font-bold rounded-xl shadow-md cursor-pointer transition-colors">
+        <button className="whitespace-nowrap w-full sm:w-auto text-center px-5 py-2.5 bg-[#006677] hover:bg-[#004d5a] text-white text-xs font-bold rounded-xl shadow-md cursor-pointer transition-colors">
           Cek Pesan / Link
         </button>
       </div>

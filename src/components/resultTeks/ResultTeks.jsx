@@ -1,4 +1,3 @@
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -10,7 +9,6 @@ import {
   ShieldAlert,
   Ban,
   ShieldCheck,
-  CheckCircle2,
   ArrowLeft
 } from 'lucide-react';
 
@@ -222,15 +220,6 @@ const ResultTeks = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 bg-gray-50 min-h-screen font-sans">
-      
-      {/* Tombol Back */}
-      <button 
-        onClick={() => navigate(-1)} 
-        className="mb-6 flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition cursor-pointer"
-      >
-        <ArrowLeft size={16} /> Kembali
-      </button>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column */}
