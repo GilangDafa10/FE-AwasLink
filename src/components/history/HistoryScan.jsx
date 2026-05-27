@@ -1,49 +1,130 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  MessageCircle,
+  AlertTriangle,
+  CheckCircle,
+  Search,
+  Loader2,
+  Smartphone,
+  Mail,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import scans from "@/api/scans";
 
 export default function HistoryScan() {
-  // Data statis untuk tabel sesuai gambar
-  const dataPesan = [
-    {
-      id: 1,
-      status: "SCAM",
-      statusType: "danger",
-      media: "SMS",
-      cuplikan: '"Selamat! No. Anda mendapatkan hadiah Rp 50jt dr..."',
-      keterangan: "Pesan penipuan modus hadiah",
-      waktu: "12 Des 2024, 14:30",
-    },
-    {
-      id: 2,
-      status: "SAFE",
-      statusType: "success",
-      media: "Email",
-      cuplikan: '"Konfirmasi pesanan Tokopedia #INV/2024/001..."',
-      keterangan: "Email transaksi resmi",
-      waktu: "12 Des 2024, 12:15",
-    },
-    {
-      id: 3,
-      status: "SAFE",
-      statusType: "success",
-      media: "WhatsApp",
-      cuplikan: '"Halo, ini kode verifikasi GitHub Anda: 123456..."',
-      keterangan: "Pesan OTP resmi",
-      waktu: "11 Des 2024, 18:45",
-    },
-    {
-      id: 4,
-      status: "PHISHING",
-      statusType: "danger",
-      media: "WhatsApp",
-      cuplikan: '"Segera unduh WhatsApp Gold versi terbaru di sini..."',
-      keterangan: "Penyebaran malware/link palsu",
-      waktu: "11 Des 2024, 09:12",
-    },
-  ];
+  const navigate = useNavigate();
+  const [scansList, setScansList] = useState([]);
+  const [totalScanned, setTotalScanned] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [rescanLoadingId, setRescanLoadingId] = useState(null);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    const fetchScans = async () => {
+      try {
+        setLoading(true);
+        const response = await scans.getScan();
+
+        // Struktur: { success, message, data: { total_scanned, history: [...] } }
+        const raw = response.data.data; // Akses nested data property
+        const list = Array.isArray(raw?.history) ? raw.history : [];
+        const total = raw?.total_scanned ?? list.length;
+
+        setScansList(list);
+        setTotalScanned(total);
+      } catch (err) {
+        console.error("Gagal mengambil riwayat scan:", err);
+        setError("Gagal memuat data riwayat keamanan.");
+      } finally {
+        setLoading(false);
+        console.log("Total Scan:", totalScanned);
+        console.log("Total Scan List:", scansList);
+      }
+    };
+    fetchScans();
+  }, []);
+
+  const isDangerous = (status) => {
+    if (!status) return false;
+    const lower = status.toLowerCase();
+    return (
+      lower.includes("phishing") ||
+      lower.includes("scam") ||
+      lower.includes("danger") ||
+      lower.includes("spammer") ||
+      lower.includes("spam")
+    );
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const handleRescan = async (messageContent) => {
+    try {
+      setLoading(true);
+      const response = await scans.createScan({
+        message_content: messageContent,
+      });
+      navigate("/result", {
+        state: {
+          scanResult: response.data,
+          scannedText: messageContent,
+        },
+      });
+    } catch (err) {
+      console.error("Gagal melakukan scan ulang:", err);
+      alert("Gagal memproses pindaian ulang.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Dynamic Statistics
+  const totalPemeriksaan = totalScanned;
+  const pesanBerbahaya = scansList.filter((item) =>
+    isDangerous(item.finalStatus),
+  ).length;
+  const pesanAman = scansList.filter(
+    (item) => !isDangerous(item.finalStatus),
+  ).length;
+
+  // Filter Data based on Search
+  const filteredData = scansList.filter((item) => {
+    const searchLower = searchTerm.toLowerCase();
+    const content = item.messageContent?.toLowerCase() || "";
+    const status = item.finalStatus?.toLowerCase() || "";
+    return content.includes(searchLower) || status.includes(searchLower);
+  });
+
+  // Pagination Logic
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const activePage = currentPage > totalPages ? totalPages : currentPage;
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const currentItems = filteredData.slice(startIndex, endIndex);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-8">
         {/* --- HEADER --- */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">
@@ -59,73 +140,43 @@ export default function HistoryScan() {
           {/* Total Pemeriksaan */}
           <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-[#e0f2fe] text-[#0ea5e9] flex items-center justify-center">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
+              <MessageCircle className="w-6 h-6" />
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500">
                 Total Pemeriksaan
               </p>
-              <p className="text-2xl font-bold text-slate-800 mt-0.5">1,284</p>
+              <p className="text-2xl font-bold text-slate-800 mt-0.5">
+                {loading ? "..." : totalPemeriksaan.toLocaleString("id-ID")}
+              </p>
             </div>
           </div>
 
           {/* Pesan Berbahaya */}
           <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#ef4444] flex items-center justify-center">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
+              <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500">
                 Pesan Berbahaya
               </p>
-              <p className="text-2xl font-bold text-slate-800 mt-0.5">42</p>
+              <p className="text-2xl font-bold text-slate-800 mt-0.5">
+                {loading ? "..." : pesanBerbahaya.toLocaleString("id-ID")}
+              </p>
             </div>
           </div>
 
           {/* Pesan Aman */}
           <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-[#dcfce7] text-[#22c55e] flex items-center justify-center">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                />
-              </svg>
+              <CheckCircle className="w-6 h-6" />
             </div>
             <div>
               <p className="text-xs font-medium text-slate-500">Pesan Aman</p>
-              <p className="text-2xl font-bold text-slate-800 mt-0.5">1,242</p>
+              <p className="text-2xl font-bold text-slate-800 mt-0.5">
+                {loading ? "..." : pesanAman.toLocaleString("id-ID")}
+              </p>
             </div>
           </div>
         </div>
@@ -137,61 +188,18 @@ export default function HistoryScan() {
             {/* Search Input */}
             <div className="relative w-full sm:w-80">
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                <Search className="w-4 h-4" />
               </span>
               <input
                 type="text"
                 placeholder="Cari isi pesan atau status..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-[#f1f5f9] text-slate-700 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-sky-400 border border-transparent transition-all"
               />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                  />
-                </svg>
-                Filter
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                Export
-              </button>
             </div>
           </div>
 
@@ -208,109 +216,128 @@ export default function HistoryScan() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                {dataPesan.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-slate-50/50 transition-colors"
-                  >
-                    {/* Status Badge */}
-                    <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        {/* Bar Indikator Vertikal */}
-                        <div
-                          className={`w-1 h-5 rounded-full ${
-                            item.statusType === "danger"
-                              ? "bg-red-500"
-                              : "bg-emerald-500"
-                          }`}
-                        />
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-xs font-bold tracking-wide ${
-                            item.statusType === "danger"
-                              ? "bg-rose-50 text-rose-600"
-                              : "bg-emerald-50 text-emerald-600"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Media Type */}
-                    <td className="py-4 px-6 whitespace-nowrap font-medium text-slate-600">
-                      <div className="flex items-center gap-2">
-                        {item.media === "SMS" && (
-                          <svg
-                            className="w-4 h-4 text-slate-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                            />
-                          </svg>
-                        )}
-                        {item.media === "Email" && (
-                          <svg
-                            className="w-4 h-4 text-slate-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                            />
-                          </svg>
-                        )}
-                        {item.media === "WhatsApp" && (
-                          <svg
-                            className="w-4 h-4 text-slate-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                            />
-                          </svg>
-                        )}
-                        {item.media}
-                      </div>
-                    </td>
-
-                    {/* Snippet / Content */}
-                    <td className="py-4 px-6 max-w-md">
-                      <p className="text-slate-800 font-medium truncate">
-                        {item.cuplikan}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {item.keterangan}
-                      </p>
-                    </td>
-
-                    {/* Date/Time */}
-                    <td className="py-4 px-6 whitespace-nowrap text-slate-500 text-xs">
-                      {item.waktu}
-                    </td>
-
-                    {/* Action Button */}
-                    <td className="py-4 px-6 whitespace-nowrap text-center">
-                      <button className="px-4 py-1.5 bg-[#40c4ff] hover:bg-[#00b0ff] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">
-                        Pindai Ulang
-                      </button>
+                {loading ? (
+                  Array.from({ length: itemsPerPage }).map((_, idx) => (
+                    <tr key={idx} className="animate-pulse">
+                      <td className="py-4 px-6">
+                        <div className="h-6 bg-slate-200 rounded w-20"></div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="h-4 bg-slate-200 rounded w-16"></div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="h-4 bg-slate-200 rounded w-48 mb-2"></div>
+                        <div className="h-3 bg-slate-200 rounded w-32"></div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="h-3 bg-slate-200 rounded w-24"></div>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <div className="h-8 bg-slate-200 rounded w-24 mx-auto"></div>
+                      </td>
+                    </tr>
+                  ))
+                ) : error ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="py-8 text-center text-rose-500 font-medium"
+                    >
+                      {error}
                     </td>
                   </tr>
-                ))}
+                ) : currentItems.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="py-8 text-center text-slate-400 font-medium"
+                    >
+                      Tidak ada riwayat scan ditemukan.
+                    </td>
+                  </tr>
+                ) : (
+                  currentItems.map((item) => {
+                    const dangerous = isDangerous(item.finalStatus);
+                    const mediaType = item.media || "WhatsApp";
+
+                    return (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50/50 transition-colors"
+                      >
+                        {/* Status Badge */}
+                        <td className="py-4 px-6 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            {/* Bar Indikator Vertikal */}
+                            <div
+                              className={`w-1 h-5 rounded-full ${
+                                dangerous ? "bg-red-500" : "bg-emerald-500"
+                              }`}
+                            />
+                            <span
+                              className={`px-2.5 py-1 rounded-md text-xs font-bold tracking-wide ${
+                                dangerous
+                                  ? "bg-rose-50 text-rose-600"
+                                  : "bg-emerald-50 text-emerald-600"
+                              }`}
+                            >
+                              {item.finalStatus
+                                ? item.finalStatus.toUpperCase()
+                                : "UNKNOWN"}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Media Type */}
+                        <td className="py-4 px-6 whitespace-nowrap font-medium text-slate-600">
+                          <div className="flex items-center gap-2">
+                            {mediaType.toLowerCase() === "sms" && (
+                              <Smartphone className="w-4 h-4 text-slate-400" />
+                            )}
+                            {mediaType.toLowerCase() === "email" && (
+                              <Mail className="w-4 h-4 text-slate-400" />
+                            )}
+                            {mediaType.toLowerCase() === "whatsapp" && (
+                              <MessageCircle className="w-4 h-4 text-slate-400" />
+                            )}
+                            {mediaType}
+                          </div>
+                        </td>
+
+                        {/* Snippet / Content */}
+                        <td className="py-4 px-6 max-w-md">
+                          <p className="text-slate-800 font-medium truncate">
+                            {item.messageContent}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            Skor Risiko: {item.messageRiskScore?.toFixed(2)}%
+                          </p>
+                        </td>
+
+                        {/* Date/Time */}
+                        <td className="py-4 px-6 whitespace-nowrap text-slate-500 text-xs">
+                          {formatDate(item.createdAt)}
+                        </td>
+
+                        {/* Action Button */}
+                        <td className="py-4 px-6 whitespace-nowrap text-center">
+                          <button
+                            onClick={() =>
+                              handleRescan(item.messageContent, item.id)
+                            }
+                            className={`px-4 py-1.5 bg-[#40c4ff] hover:bg-[#00b0ff] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 ${rescanLoadingId === item.id ? "opacity-70" : ""}`}
+                            disabled={rescanLoadingId === item.id}
+                          >
+                            {rescanLoadingId === item.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : null}
+                            Pindai Ulang
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -318,50 +345,59 @@ export default function HistoryScan() {
           {/* TABLE FOOTER / PAGINATION */}
           <div className="p-4 bg-[#eff6ff] border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 font-medium">
             <div>
-              Menampilkan <span className="text-slate-700">4</span> dari{" "}
-              <span className="text-slate-700">1,284</span> hasil
+              Menampilkan{" "}
+              <span className="text-slate-700">
+                {totalItems > 0 ? startIndex + 1 : 0} - {endIndex}
+              </span>{" "}
+              dari{" "}
+              <span className="text-slate-700">
+                {totalItems.toLocaleString("id-ID")}
+              </span>{" "}
+              hasil
             </div>
 
             {/* Pagination Controls */}
             <div className="flex items-center gap-1.5">
-              <button className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+              <button
+                disabled={activePage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={`p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors ${
+                  activePage === 1
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" />
               </button>
-              <button className="w-8 h-8 rounded-lg bg-[#0f172a] text-white flex items-center justify-center font-bold shadow-xs">
-                1
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors flex items-center justify-center">
-                2
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors flex items-center justify-center">
-                3
-              </button>
-              <button className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold transition-colors cursor-pointer ${
+                      activePage === page
+                        ? "bg-[#0f172a] text-white shadow-xs"
+                        : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+
+              <button
+                disabled={activePage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={`p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors ${
+                  activePage === totalPages
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              >
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
