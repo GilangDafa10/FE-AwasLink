@@ -1,6 +1,9 @@
 // src/routes/index.jsx
 import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "@/components/layouts/RootLayout";
+import LoginPage from "@/pages/LoginPage";
+import Login from "@/components/admin/Login";
+import DashboardPage from "@/pages/DashboardPage";
 import HomePage from "@/pages/Home";
 import ResultPage from "@/pages/ResultPage";
 import HistoryPage from "@/pages/HistoryPage";
@@ -30,6 +33,21 @@ const router = createBrowserRouter([
       }
     ],
   },
+  {
+    path: "/login",
+    element: <LoginPage />,
+    children: [
+      {
+        path: "",
+        element: <Login />
+      }
+    ]
+  },
+  {
+    path: "/dashboard",
+    element: <DashboardPage />,
+  },
 ]);
 
 export default router;
+
