@@ -22,32 +22,37 @@ export default function HistoryScan() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     const fetchScans = async () => {
       try {
         setLoading(true);
-        const response = await scans.getScan();
+        setError(null);
+        const response = await scans.getScan(currentPage, itemsPerPage);
 
-        // Struktur: { success, message, data: { total_scanned, history: [...] } }
-        const raw = response.data.data; // Akses nested data property
+        // Struktur: { success, message, data: { total_scanned, pagination: {...}, history: [...] } }
+        const raw = response.data.data;
         const list = Array.isArray(raw?.history) ? raw.history : [];
-        const total = raw?.total_scanned ?? list.length;
+        const total = raw?.total_scanned ?? raw?.pagination?.total ?? list.length;
+        const pages = raw?.pagination?.totalPages ?? 1;
+        const items = raw?.pagination?.total ?? list.length;
 
         setScansList(list);
         setTotalScanned(total);
+        setTotalPages(pages);
+        setTotalItems(items);
       } catch (err) {
         console.error("Gagal mengambil riwayat scan:", err);
         setError("Gagal memuat data riwayat keamanan.");
       } finally {
         setLoading(false);
-        console.log("Total Scan:", totalScanned);
-        console.log("Total Scan List:", scansList);
       }
     };
     fetchScans();
-  }, []);
+  }, [currentPage]);
 
   const isDangerous = (status) => {
     if (!status) return false;
@@ -106,7 +111,7 @@ export default function HistoryScan() {
     (item) => !isDangerous(item.finalStatus),
   ).length;
 
-  // Filter Data based on Search
+  // Filter Data based on Search (client-side filter pada data halaman saat ini)
   const filteredData = scansList.filter((item) => {
     const searchLower = searchTerm.toLowerCase();
     const content = item.messageContent?.toLowerCase() || "";
@@ -114,13 +119,11 @@ export default function HistoryScan() {
     return content.includes(searchLower) || status.includes(searchLower);
   });
 
-  // Pagination Logic
-  const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-  const activePage = currentPage > totalPages ? totalPages : currentPage;
-  const startIndex = (activePage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const currentItems = filteredData.slice(startIndex, endIndex);
+  // Pagination sekarang dikelola server, currentItems = data dari server
+  const activePage = currentPage;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + filteredData.length, totalItems);
+  const currentItems = filteredData;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] p-8 font-sans">
@@ -209,7 +212,6 @@ export default function HistoryScan() {
               <thead>
                 <tr className="bg-[#eff6ff] text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-100">
                   <th className="py-4 px-6">Status</th>
-                  <th className="py-4 px-6">Media</th>
                   <th className="py-4 px-6">Cuplikan Pesan</th>
                   <th className="py-4 px-6">Waktu</th>
                   <th className="py-4 px-6 text-center">Aksi</th>
@@ -258,7 +260,6 @@ export default function HistoryScan() {
                 ) : (
                   currentItems.map((item) => {
                     const dangerous = isDangerous(item.finalStatus);
-                    const mediaType = item.media || "WhatsApp";
 
                     return (
                       <tr
@@ -288,22 +289,6 @@ export default function HistoryScan() {
                           </div>
                         </td>
 
-                        {/* Media Type */}
-                        <td className="py-4 px-6 whitespace-nowrap font-medium text-slate-600">
-                          <div className="flex items-center gap-2">
-                            {mediaType.toLowerCase() === "sms" && (
-                              <Smartphone className="w-4 h-4 text-slate-400" />
-                            )}
-                            {mediaType.toLowerCase() === "email" && (
-                              <Mail className="w-4 h-4 text-slate-400" />
-                            )}
-                            {mediaType.toLowerCase() === "whatsapp" && (
-                              <MessageCircle className="w-4 h-4 text-slate-400" />
-                            )}
-                            {mediaType}
-                          </div>
-                        </td>
-
                         {/* Snippet / Content */}
                         <td className="py-4 px-6 max-w-md">
                           <p className="text-slate-800 font-medium truncate">
@@ -320,7 +305,7 @@ export default function HistoryScan() {
                         </td>
 
                         {/* Action Button */}
-                        <td className="py-4 px-6 whitespace-nowrap text-center">
+                        <td className="py-4 px-6 whitespace-nowrap flex justify-center items-center">
                           <button
                             onClick={() =>
                               handleRescan(item.messageContent, item.id)
@@ -359,10 +344,10 @@ export default function HistoryScan() {
             {/* Pagination Controls */}
             <div className="flex items-center gap-1.5">
               <button
-                disabled={activePage === 1}
+                disabled={activePage === 1 || loading}
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 className={`p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors ${
-                  activePage === 1
+                  activePage === 1 || loading
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer"
                 }`}
@@ -370,29 +355,45 @@ export default function HistoryScan() {
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold transition-colors cursor-pointer ${
-                      activePage === page
-                        ? "bg-[#0f172a] text-white shadow-xs"
-                        : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ),
-              )}
+              {/* Tampilkan max 5 halaman di sekitar halaman aktif */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((page) => {
+                  if (totalPages <= 7) return true;
+                  return page === 1 || page === totalPages ||
+                    Math.abs(page - activePage) <= 2;
+                })
+                .reduce((acc, page, idx, arr) => {
+                  if (idx > 0 && page - arr[idx - 1] > 1) {
+                    acc.push("...");
+                  }
+                  acc.push(page);
+                  return acc;
+                }, [])
+                .map((page, idx) =>
+                  page === "..." ? (
+                    <span key={`ellipsis-${idx}`} className="px-1 text-slate-400">...</span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold transition-colors cursor-pointer ${
+                        activePage === page
+                          ? "bg-[#0f172a] text-white shadow-xs"
+                          : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
 
               <button
-                disabled={activePage === totalPages}
+                disabled={activePage === totalPages || loading}
                 onClick={() =>
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                 }
                 className={`p-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors ${
-                  activePage === totalPages
+                  activePage === totalPages || loading
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer"
                 }`}

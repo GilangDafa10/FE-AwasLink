@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import scans from "@/api/scans";
 import { Zap, Mail, AlertTriangle, CheckCircle } from "lucide-react";
 
@@ -8,6 +8,42 @@ const Hero = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const handler = () => {
+      textareaRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      textareaRef.current?.focus();
+      // Efek highlight singkat
+      textareaRef.current?.classList.add("ring-2", "ring-cyan-400");
+      setTimeout(() => {
+        textareaRef.current?.classList.remove("ring-2", "ring-cyan-400");
+      }, 800);
+    };
+
+    // Listen to the custom event (for clicks from the same page, e.g. CtaSection)
+    window.addEventListener("scrollToHeroTextarea", handler);
+
+    // If navigated from Education Page with scroll state
+    if (location.state?.scrollToHero) {
+      // Delay sedikit agar rendering halaman selesai sepenuhnya
+      const timer = setTimeout(() => {
+        handler();
+        // Bersihkan state agar tidak scroll ulang saat di-refresh
+        navigate(location.pathname, { replace: true, state: {} });
+      }, 100);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener("scrollToHeroTextarea", handler);
+      };
+    }
+
+    return () => window.removeEventListener("scrollToHeroTextarea", handler);
+  }, [location.state, navigate, location.pathname]);
 
   const handleScan = async () => {
     if (!text.trim()) {
@@ -18,12 +54,12 @@ const Hero = () => {
     setError("");
     try {
       const response = await scans.createScan({ message_content: text });
-      
-      navigate("/result", { 
-        state: { 
-          scanResult: response.data, 
-          scannedText: text 
-        } 
+
+      navigate("/result", {
+        state: {
+          scanResult: response.data,
+          scannedText: text,
+        },
       });
     } catch (err) {
       console.error("Gagal melakukan scan:", err);
@@ -37,15 +73,20 @@ const Hero = () => {
     <section className="py-8 md:py-16 px-6 md:px-14 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
       <div className="lg:col-span-7 space-y-6">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-slate-800 tracking-tight">
-          Deteksi Indikasi <span className="bg-linear-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">Phishing</span> pada Pesan Anda.
+          Deteksi Indikasi{" "}
+          <span className="bg-linear-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
+            Phishing
+          </span>{" "}
+          pada Pesan Anda.
         </h1>
         <p className="text-gray-500 text-sm md:text-base max-w-xl leading-relaxed">
-          Tempelkan isi pesan dari WhatsApp, SMS, atau Email untuk dianalisis oleh
-          AI kami. Lindungi diri dari penipuan digital sebelum Anda merespons atau
-          mengklik tautan apapun.
+          Tempelkan isi pesan dari WhatsApp, SMS, atau Email untuk dianalisis
+          oleh AI kami. Lindungi diri dari penipuan digital sebelum Anda
+          merespons atau mengklik tautan apapun.
         </p>
         <div className="bg-white p-5 sm:p-4 rounded-2xl shadow-xl border border-gray-100 relative transition-all hover:shadow-2xl">
           <textarea
+            ref={textareaRef}
             className="w-full h-36 p-4 bg-gray-50 rounded-xl focus:outline-none border border-transparent focus:border-cyan-500 focus:bg-white transition-all resize-none text-sm text-slate-700 placeholder-gray-400"
             placeholder="Contoh: 'Selamat! Anda memenangkan hadiah...'"
             value={text}
@@ -56,7 +97,7 @@ const Hero = () => {
             disabled={loading}
           />
           {error && <p className="text-red-500 text-xs mt-1 mb-2">{error}</p>}
-          <button 
+          <button
             onClick={handleScan}
             disabled={loading}
             className={`mt-4 bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-gray-800 transition ${
@@ -64,7 +105,11 @@ const Hero = () => {
             }`}
           >
             {loading ? "Menganalisis..." : "Analisis Pesan Sekarang"}
-            <Zap size={18} fill="currentColor" className={loading ? "animate-pulse" : ""} />
+            <Zap
+              size={18}
+              fill="currentColor"
+              className={loading ? "animate-pulse" : ""}
+            />
           </button>
         </div>
       </div>
