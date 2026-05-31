@@ -8,12 +8,11 @@ import HomePage from "@/pages/Home";
 import ResultPage from "@/pages/ResultPage";
 import HistoryPage from "@/pages/HistoryPage";
 import EducationPage from "@/pages/EducationPage";
-// import NotFoundPage from "../pages/NotFoundPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
-    // errorElement: <NotFoundPage />,
     children: [
       {
         path: "/",
@@ -30,23 +29,27 @@ const router = createBrowserRouter([
       {
         path: "/education",
         element: <EducationPage />
-      }
+      },
     ],
   },
   {
-    path: "/login",
-    element: <LoginPage />,
-    children: [
-      {
-        path: "",
-        element: <Login />
-      }
-    ]
+    path: "*",
+    element: <NotFoundPage />,
   },
-  {
-    path: "/dashboard",
-    element: <DashboardPage />,
-  },
+  // {
+  //   path: "/login",
+  //   element: <LoginPage />,
+  //   children: [
+  //     {
+  //       path: "",
+  //       element: <Login />
+  //     }
+  //   ]
+  // },
+  // {
+  //   path: "/dashboard",
+  //   element: <DashboardPage />,
+  // },
 ]);
 
 export default router;

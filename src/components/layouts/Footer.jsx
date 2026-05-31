@@ -2,7 +2,7 @@ import { Globe, Share2 } from "lucide-react";
 
 const Footer = () => (
   <footer className="w-full bg-slate-950 border-t border-slate-900 text-slate-400 text-xs py-10 px-6 md:px-12">
-    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-8 text-center md:text-left">
+    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-6 md:px-12 text-center md:text-left">
       {/* Brand & Copyright */}
       <div className="space-y-2">
         <div className="font-bold text-white text-sm tracking-wide">AwasLink</div>

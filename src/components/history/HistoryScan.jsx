@@ -16,7 +16,6 @@ import scans from "@/api/scans";
 export default function HistoryScan() {
   const navigate = useNavigate();
   const [scansList, setScansList] = useState([]);
-  const [totalScanned, setTotalScanned] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rescanLoadingId, setRescanLoadingId] = useState(null);
   const [error, setError] = useState(null);
@@ -32,16 +31,12 @@ export default function HistoryScan() {
         setLoading(true);
         setError(null);
         const response = await scans.getScan(currentPage, itemsPerPage);
-
-        // Struktur: { success, message, data: { total_scanned, pagination: {...}, history: [...] } }
         const raw = response.data.data;
         const list = Array.isArray(raw?.history) ? raw.history : [];
-        const total = raw?.total_scanned ?? raw?.pagination?.total ?? list.length;
         const pages = raw?.pagination?.totalPages ?? 1;
         const items = raw?.pagination?.total ?? list.length;
 
         setScansList(list);
-        setTotalScanned(total);
         setTotalPages(pages);
         setTotalItems(items);
       } catch (err) {
@@ -102,8 +97,6 @@ export default function HistoryScan() {
     }
   };
 
-  // Dynamic Statistics
-  const totalPemeriksaan = totalScanned;
   const pesanBerbahaya = scansList.filter((item) =>
     isDangerous(item.finalStatus),
   ).length;
@@ -139,22 +132,7 @@ export default function HistoryScan() {
         </div>
 
         {/* --- STATS CARDS --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Total Pemeriksaan */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#e0f2fe] text-[#0ea5e9] flex items-center justify-center">
-              <MessageCircle className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500">
-                Total Pemeriksaan
-              </p>
-              <p className="text-2xl font-bold text-slate-800 mt-0.5">
-                {loading ? "..." : totalPemeriksaan.toLocaleString("id-ID")}
-              </p>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Pesan Berbahaya */}
           <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#ef4444] flex items-center justify-center">
@@ -311,12 +289,13 @@ export default function HistoryScan() {
                               handleRescan(item.messageContent, item.id)
                             }
                             className={`px-4 py-1.5 bg-[#40c4ff] hover:bg-[#00b0ff] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 ${rescanLoadingId === item.id ? "opacity-70" : ""}`}
-                            disabled={rescanLoadingId === item.id}
+                            // disabled={rescanLoadingId === item.id}
+                            disabled={true}
                           >
                             {rescanLoadingId === item.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
                             ) : null}
-                            Pindai Ulang
+                            Lihat Detail
                           </button>
                         </td>
                       </tr>
