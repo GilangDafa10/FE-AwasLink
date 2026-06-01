@@ -4,7 +4,7 @@ import CtaSection from "@/components/home/CtaSection";
 
 const Home = () => {
   return (
-    <div>
+    <div className="bg-slate-100">
       <HeroSection />
       <WorkflowSection />
       <CtaSection />

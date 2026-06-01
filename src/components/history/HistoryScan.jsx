@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import scans from "@/api/scans";
+import ScanDetailModal from "./ScanDetailModal";
 
 export default function HistoryScan() {
   const navigate = useNavigate();
@@ -24,6 +25,9 @@ export default function HistoryScan() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 20;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedScanId, setSelectedScanId] = useState(null);
 
   useEffect(() => {
     const fetchScans = async () => {
@@ -119,7 +123,7 @@ export default function HistoryScan() {
   const currentItems = filteredData;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] p-8 font-sans">
+    <div className="min-h-screen bg-slate-100 text-[#0f172a] p-8 font-sans">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-8">
         {/* --- HEADER --- */}
         <div>
@@ -285,16 +289,12 @@ export default function HistoryScan() {
                         {/* Action Button */}
                         <td className="py-4 px-6 whitespace-nowrap flex justify-center items-center">
                           <button
-                            onClick={() =>
-                              handleRescan(item.messageContent, item.id)
-                            }
-                            className={`px-4 py-1.5 bg-[#40c4ff] hover:bg-[#00b0ff] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2 ${rescanLoadingId === item.id ? "opacity-70" : ""}`}
-                            // disabled={rescanLoadingId === item.id}
-                            disabled={true}
+                            onClick={() => {
+                              setSelectedScanId(item.id);
+                              setIsModalOpen(true);
+                            }}
+                            className={`px-4 py-1.5 bg-[#40c4ff] hover:bg-[#00b0ff] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-2`}
                           >
-                            {rescanLoadingId === item.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : null}
                             Lihat Detail
                           </button>
                         </td>
@@ -383,6 +383,12 @@ export default function HistoryScan() {
           </div>
         </div>
       </div>
+
+      <ScanDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        scanId={selectedScanId}
+      />
     </div>
   );
 }
