@@ -30,10 +30,23 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 md:py-6 flex justify-between items-center">
         {/* Logo */}
-        <NavLink to="/" end className="text-2xl font-bold text-slate-800 flex items-center gap-2 cursor-pointer no-underline" onClick={closeMenu}>
-          <span className="bg-linear-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
-            AwasLink
-          </span>
+        <NavLink
+          to="/"
+          end
+          className="text-2xl font-bold text-slate-800 flex items-center gap-2 cursor-pointer no-underline"
+          onClick={closeMenu}
+        >
+          {/* Desktop / tablet: text logo; Mobile: compact logo */}
+          <img
+            src="/logoTeksAwasLink.png"
+            alt="AwasLink Logo"
+            className="hidden md:block h-6 object-contain"
+          />
+          <img
+            src="/AwasLinkLogo.png"
+            alt="AwasLink Icon"
+            className="block md:hidden w-10 h-10 object-contain"
+          />
         </NavLink>
 
         {/* Desktop Links */}
@@ -43,7 +56,11 @@ const Navbar = () => {
           </NavLink>
           <NavLink
             to="/result"
-            className={isAtResult ? linkClass : "text-gray-300 cursor-not-allowed pb-1 select-none pointer-events-none"}
+            className={
+              isAtResult
+                ? linkClass
+                : "text-gray-300 cursor-not-allowed pb-1 select-none pointer-events-none"
+            }
             onClick={(e) => {
               if (!isAtResult) e.preventDefault();
             }}
@@ -75,7 +92,9 @@ const Navbar = () => {
       {/* Mobile Links Menu */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out border-b border-gray-100 ${
-          isOpen ? "max-h-72 opacity-100 py-4 bg-white/95 backdrop-blur-md" : "max-h-0 opacity-0 pointer-events-none"
+          isOpen
+            ? "max-h-72 opacity-100 py-4 bg-white/95 backdrop-blur-md"
+            : "max-h-0 opacity-0 pointer-events-none"
         }`}
       >
         <div className="px-6 flex flex-col space-y-3 text-base">
@@ -84,7 +103,11 @@ const Navbar = () => {
           </NavLink>
           <NavLink
             to="/result"
-            className={isAtResult ? mobileLinkClass : "pl-4 border-l-4 border-transparent text-gray-300 cursor-not-allowed py-2 w-full block select-none pointer-events-none"}
+            className={
+              isAtResult
+                ? mobileLinkClass
+                : "pl-4 border-l-4 border-transparent text-gray-300 cursor-not-allowed py-2 w-full block select-none pointer-events-none"
+            }
             onClick={(e) => {
               if (!isAtResult) {
                 e.preventDefault();
@@ -97,10 +120,18 @@ const Navbar = () => {
           >
             Analisis Pesan
           </NavLink>
-          <NavLink to="/history" className={mobileLinkClass} onClick={closeMenu}>
+          <NavLink
+            to="/history"
+            className={mobileLinkClass}
+            onClick={closeMenu}
+          >
             Riwayat
           </NavLink>
-          <NavLink to="/education" className={mobileLinkClass} onClick={closeMenu}>
+          <NavLink
+            to="/education"
+            className={mobileLinkClass}
+            onClick={closeMenu}
+          >
             Edukasi
           </NavLink>
         </div>
@@ -110,4 +141,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

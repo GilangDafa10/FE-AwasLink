@@ -338,8 +338,11 @@ export default function HistoryScan() {
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((page) => {
                   if (totalPages <= 7) return true;
-                  return page === 1 || page === totalPages ||
-                    Math.abs(page - activePage) <= 2;
+                  return (
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - activePage) <= 2
+                  );
                 })
                 .reduce((acc, page, idx, arr) => {
                   if (idx > 0 && page - arr[idx - 1] > 1) {
@@ -350,7 +353,12 @@ export default function HistoryScan() {
                 }, [])
                 .map((page, idx) =>
                   page === "..." ? (
-                    <span key={`ellipsis-${idx}`} className="px-1 text-slate-400">...</span>
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-1 text-slate-400"
+                    >
+                      ...
+                    </span>
                   ) : (
                     <button
                       key={page}
