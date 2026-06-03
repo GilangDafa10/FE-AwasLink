@@ -1,3 +1,5 @@
+import { Mail, AlertTriangle, CheckCircle } from "lucide-react";
+
 const Workflow = () => (
   <section className="py-10 md:py-20 px-6 md:px-14 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
     <div className="lg:col-span-7 space-y-6">
@@ -37,32 +39,58 @@ const Workflow = () => (
       </div>
     </div>
     <div className="lg:col-span-5 bg-linear-to-br from-cyan-500/5 to-blue-500/5 bg-slate-50 rounded-3xl p-6 sm:p-10 border border-slate-100 relative flex flex-col justify-center min-h-[280px]">
-      {/* Kartu Laporan Deteksi Mockup */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xl border border-gray-100/80 space-y-4 relative z-10 transition-transform hover:scale-[1.02] duration-300">
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <span className="font-bold text-slate-800 text-sm sm:text-base">Laporan Deteksi</span>
-          <span className="bg-red-50 text-red-600 text-[10px] sm:text-xs px-2.5 py-1 rounded-full font-bold border border-red-100">
-            HIGH RISK
-          </span>
-        </div>
-        <div className="p-3 bg-red-50/50 border border-red-100/50 rounded-xl">
-          <div className="text-[11px] sm:text-xs text-red-500 font-semibold mb-1 flex items-center gap-1">
-            ⚠ Teks Pesan Berbahaya:
+                <div className="bg-white/90 backdrop-blur-md p-5 sm:p-6 rounded-2xl shadow-lg border border-blue-100 space-y-4">
+            {/* Peringatan Urgensi */}
+            <div className="flex flex-col items-start gap-3 bg-blue-50/80 p-3.5 rounded-xl">
+              {/* Header Preview */}
+              <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+                <Mail size={16} /> Pratinjau Analisis Pesan
+              </div>
+              <p className="text-xs sm:text-sm text-gray-700 p-2.5 bg-gray-50/80 border border-gray-100 rounded-lg w-full italic">
+                "Selamat! Nomor Anda terpilih mendapatkan subsidi Rp 5jt. Hubungi
+                bit.ly/subsidi-id segera..."
+              </p>
+              <div className="text-red-500 text-[11px] sm:text-xs font-semibold flex items-center gap-1">
+                ⚠ Pola Urgensi & Janji Palsu Terdeteksi
+              </div>
+            </div>
+
+            {/* Ancaman Phishing */}
+            <div className="flex gap-3.5 p-3.5 bg-red-50/70 rounded-xl border border-red-100">
+              <AlertTriangle size={18} className="text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <h3 className="font-semibold text-gray-800 text-xs sm:text-sm">
+                    Ancaman Phishing
+                  </h3>
+                  <span className="bg-red-100 text-red-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    BAHAYA
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-xs text-gray-600 leading-normal">
+                  Teks mengandung pola manipulasi psikologis.
+                </p>
+              </div>
+            </div>
+
+            {/* Pesan Aman */}
+            <div className="flex gap-3.5 p-3.5 bg-green-50/70 rounded-xl border border-green-100">
+              <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <h3 className="font-semibold text-gray-800 text-xs sm:text-sm">
+                    Pesan Aman
+                  </h3>
+                  <span className="bg-green-100 text-green-800 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    AMAN
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-xs text-gray-600 leading-normal">
+                  Terverifikasi sebagai komunikasi resmi.
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="text-xs sm:text-sm italic text-gray-500 font-medium leading-relaxed">
-            "Segera verifikasi data anda agar rekening tidak diblokir..."
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="flex justify-between text-[11px] text-gray-400">
-            <span>Indikasi Phishing</span>
-            <span className="font-bold text-red-500">92%</span>
-          </div>
-          <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-            <div className="bg-red-500 h-full w-[92%] rounded-full" />
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 );
