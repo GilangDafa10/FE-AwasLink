@@ -81,26 +81,6 @@ export default function HistoryScan() {
     }
   };
 
-  const handleRescan = async (messageContent) => {
-    try {
-      setLoading(true);
-      const response = await scans.createScan({
-        message_content: messageContent,
-      });
-      navigate("/result", {
-        state: {
-          scanResult: response.data,
-          scannedText: messageContent,
-        },
-      });
-    } catch (err) {
-      console.error("Gagal melakukan scan ulang:", err);
-      alert("Gagal memproses pindaian ulang.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const pesanBerbahaya = scansList.filter((item) =>
     isDangerous(item.finalStatus),
   ).length;
@@ -124,7 +104,7 @@ export default function HistoryScan() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-[#0f172a] p-8 font-sans">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto  md:px-12 space-y-8">
         {/* --- HEADER --- */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-[#0f172a]">

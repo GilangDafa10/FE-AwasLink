@@ -49,7 +49,7 @@ export default function ScanDetailModal({ isOpen, onClose, scanId }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white p-6 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="mb-5 flex justify-between items-center border-b border-slate-100 bg-[#f8fafc]">
+        <div className="mb-5 flex justify-between items-center">
           <h2 className="text-lg font-bold text-slate-800">Detail Pesan</h2>
           <button
             onClick={onClose}
@@ -91,16 +91,15 @@ export default function ScanDetailModal({ isOpen, onClose, scanId }) {
               </div>
 
               {/* Message Content Section */}
-              <div className="bg-slate-50 rounded-xl border border-slate-100">
-                <p className="text-sm font-medium text-slate-500 mb-2">Isi Pesan:</p>
+              <div className="bg-slate-50 rounded-xl border border-slate-100 p-2">
+                <p className="text-sm font-medium text-slate-500 mb-1">Isi Pesan:</p>
                 <p className="text-slate-800 text-sm leading-relaxed wrap-break-word">
                   {data.messageContent}
                 </p>
               </div>
               
               {/* Info Section */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-lg border border-slate-100">
+                <div className="bg-slate-50 rounded-lg border border-slate-100 p-2">
                   <p className="text-xs text-slate-500 mb-1">Waktu Scan</p>
                   <p className="text-xs font-medium text-slate-700">
                     {new Date(data.createdAt).toLocaleString('id-ID', {
@@ -112,7 +111,6 @@ export default function ScanDetailModal({ isOpen, onClose, scanId }) {
                     })}
                   </p>
                 </div>
-              </div>
 
             </div>
           ) : (
@@ -123,7 +121,7 @@ export default function ScanDetailModal({ isOpen, onClose, scanId }) {
         </div>
         
         {/* Footer */}
-        <div className="mt-3 border-t border-slate-100 flex justify-end bg-[#f8fafc]">
+        <div className="mt-3 flex justify-end">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
